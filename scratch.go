@@ -209,28 +209,30 @@ func (b *Buf) PutUint16(n uint16) *Buf {
 }
 
 // Marshal appends the marshaled form of msg to the buffer.
+// Buf.Bytes() is returned if marshaling succeeded.
 // The most common implementations of SizedMarshaler are protobuf messages.
-func (b *Buf) Marshal(msg SizedMarshaler) error {
+func (b *Buf) Marshal(msg SizedMarshaler) ([]byte, error) {
 	i := b.Len()
 	s := b.Tail(msg.Size())
 	n, err := msg.MarshalToSizedBuffer(s)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	b.s = s[:i+n]
-	return nil
+	return b.Bytes(), nil
 }
 
 // DeterministicallyMarshal appends the marshaled form of msg to the buffer.
+// Buf.Bytes() is returned if marshaling succeeded.
 // The most common implementations of DeterministicMarshaler are protobuf messages.
-func (b *Buf) DeterministicallyMarshal(msg DeterministicMarshaler) error {
+func (b *Buf) DeterministicallyMarshal(msg DeterministicMarshaler) ([]byte, error) {
 	b.Grow(msg.XXX_Size())
 	s, err := msg.XXX_Marshal(b.s, true)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	b.s = s
-	return nil
+	return b.Bytes(), nil
 }
 
 // NewBuf returns a new buffer capable of holding cap bytes without re-allocation.
