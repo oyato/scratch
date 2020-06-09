@@ -59,6 +59,13 @@ func (b *Buf) Bytes() []byte {
 	return b.s[:len(b.s):len(b.s)]
 }
 
+// BytesCopy is like Bytes(), but returns a copy of the buffer instead of a reference.
+func (b *Buf) BytesCopy() []byte {
+	s := make([]byte, len(b.s))
+	copy(s, b.s)
+	return s
+}
+
 // String returns a copy buffered bytes as a string.
 func (b *Buf) String() string {
 	return string(b.s)
@@ -222,6 +229,15 @@ func (b *Buf) Marshal(msg SizedMarshaler) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
+// MarshalCopy is like Marshal(), but returns a copy of the buffer instead of a reference.
+func (b *Buf) MarshalCopy(msg SizedMarshaler) ([]byte, error) {
+	_, err := b.Marshal(msg)
+	if err != nil {
+		return nil, err
+	}
+	return b.BytesCopy(), nil
+}
+
 // DeterministicallyMarshal appends the marshaled form of msg to the buffer.
 // Buf.Bytes() is returned if marshaling succeeded.
 // The most common implementations of DeterministicMarshaler are protobuf messages.
@@ -233,6 +249,15 @@ func (b *Buf) DeterministicallyMarshal(msg DeterministicMarshaler) ([]byte, erro
 	}
 	b.s = s
 	return b.Bytes(), nil
+}
+
+// DeterministicallyMarshalCopy is like DeterministicallyMarshal, but returns a copy of the buffer instead of a reference.
+func (b *Buf) DeterministicallyMarshalCopy(msg DeterministicMarshaler) ([]byte, error) {
+	_, err := b.DeterministicallyMarshal(msg)
+	if err != nil {
+		return nil, err
+	}
+	return b.BytesCopy(), nil
 }
 
 // NewBuf returns a new buffer capable of holding cap bytes without re-allocation.
